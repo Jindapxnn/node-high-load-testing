@@ -1,0 +1,1 @@
+const { sendToQueue } = require('../config/rabbitmq');

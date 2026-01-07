@@ -1,0 +1,38 @@
+# --- Dependency folders ---
+node_modules/
+api/node_modules/
+worker/node_modules/
+
+# --- Environment variables (สำคัญมาก: ห้ามเอาขึ้น GitHub) ---
+.env
+*.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# --- Docker data (ห้ามเอาไฟล์ฐานข้อมูลในเครื่องขึ้น) ---
+postgres_data/
+redis_data/
+rabbit_data/
+
+# --- Logs ---
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+logs/
+*.log
+
+# --- OS & Editors ---
+.DS_Store
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# --- Testing ---
+coverage/
+.nyc_output
+
+# --- Optional: K6 results ---
+summary.json
