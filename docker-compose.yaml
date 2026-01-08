@@ -31,18 +31,48 @@ services:
     container_name: rabbitmq_mq
     restart: always
     ports:
-      - "5672:5672"   # RabbitMQ Port หลัก
+      - "5672:5672" # RabbitMQ Port หลัก
       - "15672:15672" # Management UI (สำหรับดูคิวผ่านเว็บ)
     environment:
       RABBITMQ_DEFAULT_USER: ${RABBIT_USER}
       RABBITMQ_DEFAULT_PASS: ${RABBIT_PASS}
     volumes:
       - rabbit_data:/var/lib/rabbitmq
+    # --- API Service ---
+  api:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    container_name: api_service
+    ports:
+      - "4000:4000"
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      REDIS_URL: ${REDIS_URL}
+      RABBITMQ_URL: ${RABBITMQ_URL}
+      PORT: 4000
+    depends_on:
+      - postgres
+      - redis
+      - rabbitmq
+    # --- Worker Service ---
+  worker:
+    build:
+      context: ./workers
+      dockerfile: Dockerfile
+    container_name: worker_service
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      RABBITMQ_URL: ${RABBITMQ_URL}
+    depends_on:
+      - postgres
+      - rabbitmq
 
 volumes:
   postgres_data:
   redis_data:
   rabbit_data:
+
 
 networks:
   default:

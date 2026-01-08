@@ -1,7 +1,11 @@
 # --- Dependency folders ---
 node_modules/
 api/node_modules/
-worker/node_modules/
+workers/node_modules/
+
+# --- Prisma migrations ---
+api/prisma/migrations/
+workers/prisma/migrations/
 
 # --- Environment variables (สำคัญมาก: ห้ามเอาขึ้น GitHub) ---
 .env

@@ -1,23 +1,19 @@
-const { Pool } = require('pg');
+const { PrismaClient } = require('@prisma/client');
 
-const pool = new Pool({
-    connectionString: process.env.DATABASE_URL || 'postgresql://user:password@localhost:5432/queue_db',
-    // ตั้งค่า Pool สำหรับรองรับ Load Test
-    max: 20,             // จำนวนการเชื่อมต่อสูงสุด
-    idleTimeoutMillis: 30000,
-    connectionTimeoutMillis: 2000,
+// สร้าง instance ของ PrismaClient
+// ในช่วง Load Test เราสามารถตั้งค่า log เพื่อดู query ที่ช้าได้
+const prisma = new PrismaClient({
+  log: ['error', 'warn'], 
 });
 
-pool.on('connect', () => {
-    console.log('Successfully connected to PostgreSQL Pool');
-});
+async function connectDB() {
+  try {
+    await prisma.$connect();
+    console.log('[Prisma] Database connection success');
+  } catch (err) {
+    console.error('[Prisma] Could not connect to database', err);
+    process.exit(1);
+  }
+}
 
-pool.on('error', (err) => {
-    console.error('Unexpected error on idle client', err);
-    process.exit(-1);
-});
-
-module.exports = {
-    query: (text, params) => pool.query(text, params),
-    pool: pool 
-};
+module.exports = { prisma, connectDB };
