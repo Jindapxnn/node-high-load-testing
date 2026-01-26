@@ -5,7 +5,7 @@ services:
     container_name: postgres_db
     restart: always
     env_file:
-      - .env.prod
+      - .env.dev
     ports:
       - "5432:5432"
     volumes:
@@ -42,7 +42,7 @@ services:
       - "5672:5672" # RabbitMQ Port หลัก
       - "15672:15672" # Management UI (สำหรับดูคิวผ่านเว็บ)
     env_file:
-      - .env.prod
+      - .env.dev
     volumes:
       - rabbit_data:/var/lib/rabbitmq
     healthcheck:
@@ -61,7 +61,7 @@ services:
     ports:
       - "4000:4000"
     env_file:
-      - .env.prod
+      - .env.dev
     depends_on:
       postgres:
         condition: service_healthy
@@ -76,7 +76,7 @@ services:
       dockerfile: workers/Dockerfile
     container_name: worker_service
     env_file:
-      - .env.prod
+      - .env.dev
     depends_on:
       postgres:
         condition: service_healthy

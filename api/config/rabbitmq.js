@@ -17,8 +17,9 @@ const sendToQueue = (data) => {
         console.error('[RabbitMQ] Channel is not initialized yet!');
         return;
     }
-    const result = channel.sendToQueue('booking_queue', Buffer.from(JSON.stringify(data)), { persistent: true });
-    console.log(`[RabbitMQ] Message sent to queue: ${result}`);
+    channel.sendToQueue('booking_queue', Buffer.from(JSON.stringify(data)), { persistent: true });
+    // const result = channel.sendToQueue('booking_queue', Buffer.from(JSON.stringify(data)), { persistent: true });
+    // console.log(`[RabbitMQ] Message sent to queue: ${result}`);
     return result;
 }
 

@@ -8,7 +8,7 @@ api/prisma/migrations/
 workers/prisma/migrations/
 
 # --- Environment variables (สำคัญมาก: ห้ามเอาขึ้น GitHub) ---
-.env
+.env*
 *.env
 .env.local
 .env.development.local
