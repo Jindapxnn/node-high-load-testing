@@ -13,7 +13,13 @@ async function connectRabbit (){
 }
 
 const sendToQueue = (data) => {
-    channel.sendToQueue('booking_queue', Buffer.from(JSON.stringify(data)), {persistent: true})
+    if (!channel) {
+        console.error('[RabbitMQ] Channel is not initialized yet!');
+        return;
+    }
+    const result = channel.sendToQueue('booking_queue', Buffer.from(JSON.stringify(data)), { persistent: true });
+    console.log(`[RabbitMQ] Message sent to queue: ${result}`);
+    return result;
 }
 
 module.exports = { connectRabbit, sendToQueue };

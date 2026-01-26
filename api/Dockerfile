@@ -2,13 +2,14 @@ FROM node:25-alpine
 
 WORKDIR /app
 
-COPY package*.json ./
+COPY api/package*.json ./
 RUN npm ci 
 
-COPY . .
+COPY api/ .
 
+COPY prisma/ ./prisma
 RUN npx prisma generate
 
 EXPOSE 3000
 
-CMD ["node", "index.js"]
+CMD ["sh", "-c", "npx prisma migrate deploy && node index.js"]

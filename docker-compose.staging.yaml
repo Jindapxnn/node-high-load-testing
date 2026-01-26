@@ -1,0 +1,94 @@
+services:
+  # --- Database: Postgres ---
+  postgres:
+    image: postgres:15-alpine
+    container_name: postgres_db
+    restart: always
+    env_file:
+      - .env.prod
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s     # ตรวจสอบทุก 5 วินาที
+      timeout: 5s      # ถ้า 5 วินาทีไม่ตอบถือว่า timeout
+      retries: 5       # ถ้าพลาดติดต่อกัน 5 ครั้งถือว่า unhealthy
+      start_period: 10s # ให้เวลา Boot ช่วงแรก 10 วินาทีก่อนเริ่มเช็ค
+
+  # --- Cache: Redis ---
+  redis:
+    image: redis:7-alpine
+    container_name: redis_cache
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli ping | grep PONG"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
+
+  # --- Message Queue: RabbitMQ ---
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: rabbitmq_mq
+    restart: always
+    ports:
+      - "5672:5672" # RabbitMQ Port หลัก
+      - "15672:15672" # Management UI (สำหรับดูคิวผ่านเว็บ)
+    env_file:
+      - .env.prod
+    volumes:
+      - rabbit_data:/var/lib/rabbitmq
+    healthcheck:
+      # ใช้คำสั่ง rabbitmq-diagnostics เพื่อเช็คว่า node ทำงานปกติและไม่มี alarm (เช่น disk เต็ม)
+      test: ["CMD-SHELL", "rabbitmq-diagnostics -q check_running && rabbitmq-diagnostics -q check_local_alarms"]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+      start_period: 15s # RabbitMQ ใช้เวลา Boot ค่อนข้างนาน ให้เวลามันหน่อย
+    # --- API Service ---
+  api:
+    build:
+      context: .
+      dockerfile: api/Dockerfile
+    container_name: api_service
+    ports:
+      - "4000:4000"
+    env_file:
+      - .env.prod
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    # --- Worker Service ---
+  worker:
+    build:
+      context: .
+      dockerfile: workers/Dockerfile
+    container_name: worker_service
+    env_file:
+      - .env.prod
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
+  redis_data:
+  rabbit_data:
+
+
+networks:
+  default:
+    name: queue_network
