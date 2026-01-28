@@ -1,3 +1,4 @@
+name: node-staging
 services:
   # --- Database: Postgres ---
   postgres:
@@ -85,8 +86,11 @@ services:
 
 volumes:
   postgres_data:
+    name: postgres_data
   redis_data:
+    name: redis_data
   rabbit_data:
+    name: rabbit_data
 
 
 networks:
