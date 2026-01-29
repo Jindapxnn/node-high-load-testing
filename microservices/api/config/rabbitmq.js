@@ -20,7 +20,7 @@ const sendToQueue = (data) => {
     channel.sendToQueue('booking_queue', Buffer.from(JSON.stringify(data)), { persistent: true });
     // const result = channel.sendToQueue('booking_queue', Buffer.from(JSON.stringify(data)), { persistent: true });
     // console.log(`[RabbitMQ] Message sent to queue: ${result}`);
-    return result;
+    // return result;
 }
 
 module.exports = { connectRabbit, sendToQueue };
