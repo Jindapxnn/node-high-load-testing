@@ -17,6 +17,7 @@ async function startConsumer() {
 
         // 3. จำกัดการรับงาน (Prefetch) 
         // รับงานมาทำทีละ 1 ชิ้น ถ้าทำไม่เสร็จจะไม่หยิบชิ้นต่อไป (ช่วยไม่ให้ DB พัง)
+        let queueNumber = 1;
         channel.prefetch(1);
 
         console.log('Worker (Consumer) is ready and waiting for messages...');
@@ -25,15 +26,13 @@ async function startConsumer() {
         channel.consume(queueName, async (msg) => {
             if (msg !== null) {
                 const content = JSON.parse(msg.content.toString());
-                console.log(`Received Job: [Queue #${content.queueNumber}]`);
+                console.log(`Received Job: [Queue #${queueNumber}]`);
 
                 try {
                     // 5. บันทึกลง Database จริงๆ ผ่าน Prisma
                     await prisma.booking.create({
                         data: {
                             username: content.username,
-                            queueNumber: content.queueNumber,
-                            // ถ้ามีฟิลด์อื่น เช่น createdAt สามารถใส่เพิ่มได้
                         }
                     });
 
@@ -41,6 +40,7 @@ async function startConsumer() {
                     
                     // 6. บอก RabbitMQ ว่า "งานเสร็จแล้ว ลบออกจากคิวได้" (Acknowledge)
                     channel.ack(msg);
+                    queueNumber++;
                 } catch (error) {
                     console.error(`Error saving to DB: ${error.message}`);
                     

@@ -6,17 +6,10 @@ exports.bookDirect = async (req, res) => {
   try {
     const { username } = req.body;
 
-    // หาเลขคิวล่าสุดจาก DB
-    const lastBooking = await prisma.booking.findFirst({
-      orderBy: { queueNumber: "desc" },
-    });
-    const nextQueue = (lastBooking?.queueNumber || 0) + 1;
-
     // บันทึกลง Postgres ทันที
     const newBooking = await prisma.booking.create({
       data: {
         username: username,
-        queueNumber: nextQueue,
       },
     });
 
@@ -43,18 +36,14 @@ exports.bookQueue = async (req, res) => {
   try {
     const { username } = req.body;
 
-    const queueNumber = await redisClient.incr("daily_queue_count");
-
     const payload = {
       username,
-      queueNumber,
       timestamp: new Date(),
     };
     sendToQueue(payload);
 
     res.status(202).json({
       success: true,
-      queueNumber: queueNumber,
       message: "จองคิวสำเร็จ (กำลังประมวลผลผ่าน Queue)",
     });
   } catch (error) {
@@ -78,7 +67,7 @@ exports.getLatestBookings = async (req, res) => {
     const bookings = await prisma.booking.findMany({
       take: 100,
       orderBy: { createdAt: "desc" },
-    })
+    });
     // 3. เก็บข้อมูลลง Redis (ตั้งเวลาหมดอายุ 10 วินาที เพื่อให้ข้อมูลไม่เก่าเกินไป)
     await redisClient.setEx(CACHE_KEY, 10, JSON.stringify(bookings));
     res.json({ source: "database", data: bookings });

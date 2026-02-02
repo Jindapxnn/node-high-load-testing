@@ -14,7 +14,7 @@ export const options = {
     },
 };
 
-const BASE_URL = 'http://node-app:3000/api'; 
+const BASE_URL = 'http://api_service:4000/api'; 
 
 export default function () {
     // random ways to book
